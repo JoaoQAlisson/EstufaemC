@@ -1,0 +1,71 @@
+#include "DHT.h"
+// Todas as variaveis 
+const int LAMAR = 10; // Led Amarelo Sensor Temperatura
+const int LVERD = 9; // Led Verde Sensor Temperatura
+const int LVERM = 8; // Led Vermelho Sensor Temperatura
+const int BUZ = 7; // Piezo Buzzer em caso emergencial
+const int TEMP = 3; // Variavel de temperatura 
+int ligadoTemp=0; // Variavel de acionamento Buzzer temperatura
+const int pino_dht = 3; // pino onde o sensor DHT esta conectado
+float temperatura; // variavel para armazenar o valor de temperatura
+DHT dht(pino_dht, DHT11); // define o pino e o tipo de DHT
+
+void setup() {
+  
+  pinMode (LAMAR, OUTPUT);
+  pinMode (LVERD, OUTPUT);
+  pinMode (LVERM, OUTPUT);
+  pinMode (BUZ, OUTPUT);
+  // Inicia e configura a Serial
+  Serial.begin(9600); // 9600bps
+  dht.begin(); // inicializa o sensor DHT
+
+}
+ 
+void loop() {
+   // Aguarda alguns segundos entre uma leitura e outra
+   delay(2000); // 2 segundos (Datasheet)
+
+   // A leitura da temperatura ou umidade pode levar 250ms
+   // O atraso do sensor pode chegar a 2 segundos
+   temperatura = dht.readTemperature(); // le a temperatura em Celsius
+ 
+   // Se ocorreu alguma falha durante a leitura
+  if (isnan(temperatura)) {
+    Serial.println("Falha na leitura do Sensor DHT!");
+  }
+  else {  // Se nao
+    // Imprime o valor de temperatura  
+    Serial.print("Temperatura: ");
+    Serial.print(temperatura);
+    Serial.print(" *C ");
+    
+    Serial.print("\t");  // tabulacao
+    
+    Serial.println(); // nova linha
+  }
+
+ if (temperatura <=22 && temperatura >=20){
+   digitalWrite (LVERD,HIGH);
+   digitalWrite (LAMAR,LOW);
+   digitalWrite (LVERM,LOW);
+   ligadoTemp=0;
+ }
+ if (temperatura >22){
+   digitalWrite (LVERD,LOW);
+   digitalWrite (LAMAR,LOW);
+   digitalWrite (LVERM,HIGH);
+   ligadoTemp=1;
+ }
+ if (temperatura <20){
+   digitalWrite (LVERD,LOW);
+   digitalWrite (LAMAR,HIGH);
+   digitalWrite (LVERM,LOW);
+   ligadoTemp=1;
+ }
+ if (ligadoTemp ==1){
+   tone (BUZ, 440);
+}
+ if (ligadoTemp ==0){
+   noTone(BUZ);
+}}
